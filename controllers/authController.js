@@ -8,8 +8,7 @@ module.exports = {
         var sql = `SELECT username from user WHERE username='${username}'`;
         conn.query(sql, (err,results) => {
             if(err) {
-                res.send({ status: 'error', message: 'System Error'});
-                res.end();
+                throw err;
             }
 
             if(results.length > 0) {
@@ -30,26 +29,25 @@ module.exports = {
                 sql = `INSERT into user SET ? `;
                 conn.query(sql,dataUser,(err1, results1) => {
                     if(err1) {
-                        res.send({ status: 'error', message: 'System Error'});
-                        res.end();
+                        throw err1;
                     }
 
-                    var linkVerifikasi = ``;
+                    var linkVerifikasi = `http://localhost:3000/verified?username=${username}&password=${hashPassword}`;
                     var mailOptions = {
                         from: 'Penguasa Hokage Club <baronhartono@gmail.com>',
                         to: email,
                         subject: 'Verifikasi Email untuk Hokage Club',
-                        html: `Tolong click link ini untuk verifikasi : ${linkVerifikasi}`
+                        html: `Tolong click link ini untuk verifikasi : <a href="${linkVerifikasi}">Join Hokage Club!</a>`
                     }
 
-                    transporter.sendMail(mailOptions, (err,res1) => {
-                        if(err) { 
-                            console.log(err) 
-                            res.send('Error')
+                    transporter.sendMail(mailOptions, (err2,res2) => {
+                        if(err2) { 
+                            console.log(err2) 
+                            throw err2;
                         }
                         else {
                             console.log('Success!')
-                            res.send('Success')
+                            res.send({ username, email, role: 'User', status: 'Unverified', token: '' })
                         }
                     })
                 })
